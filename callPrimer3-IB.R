@@ -22,7 +22,7 @@
 #'
 #'
 .callP3NreadOrg<-function(seq,size_range='151-500',Tm=c(55,57,60),GC=c(30,65),name,sequence_target=NULL,
-                          SSR_exclude_region=TRUE,report=NULL, primer3_path="primer3",
+                          SSR_exclude_region=TRUE,report=NULL, primer3_path="primer3",primer_num=3, liberal_bases=TRUE,
         primer3=file.path(primer3_path,"bin","primer3_core.exe"),
         thermo.param=file.path(primer3_path, "bin", "primer3_config\\"),
         settings=file.path(primer3_path,"primer3_v1_1_4_Ido_Bar_settings.txt")){
@@ -37,6 +37,8 @@
             sprintf("SEQUENCE_TEMPLATE=%s\n",as.character(seq)),
             sprintf("SEQUENCE_TARGET=%s\n",sequence_target),
             sequence_exclude_region,
+            sprintf("PRIMER_LIBERAL_BASE=%d\n", as.numeric(liberal_bases)),
+            sprintf("PRIMER_NUM_RETURN=%d\n", primer_num),
             "PRIMER_TASK=pick_detection_primers\n",
             "PRIMER_PICK_LEFT_PRIMER=1\n" ,
             "PRIMER_PICK_INTERNAL_OLIGO=0\n",
