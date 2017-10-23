@@ -4,16 +4,17 @@
 #' @param seq DNAstring object, one DNA string for the given amplicon
 #' @param sequence_target: A space separated list of target pairs: 'starting position,target length starting position2,target length2'
 #' @param SSR_exclude_region: Usually same as target, make sure the SSR is not considered as an internal oligo
-#' @param size_range default: '151-500'
+#' @param size_range product size range in the form of min-max. multiple ranges can be provided with a space between ranges, then they are prioritized from left to right. default: '151-500',
 #' @param Tm melting temprature parameters default:c(55,57,60)
+#' @param diff_TM allowed Tm difference between each fw and rv primers
 #' @param GC min and max %GC content parameters default: c(30,65)
 #' @param name name of the amplicon in chr_start_end format
 #' @param primer3 primer3 location
 #' @param thermo.param thermodynamic parameters folder
 #' @param settings text file for parameters
-#' @author Ido Bar forked from Altuna Akalin which  modified Arnaud Krebs' original function
+#' @author Ido Bar forked from Altuna Akalin which modified Arnaud Krebs' original function
 #' @example
-#'
+#' primer3_path=path.expand("~/R/source/primer3"),
 #' primers=mapply(.callP3NreadOrg,seq=transcripts$sequence[match(filtered_PSR$Seq_ID, transcripts$transcript_id)],
 #'              name = filtered_PSR$Seq_ID,
 #'      report = paste0(filtered_PSR$Seq_ID, sprintf("_primer3_report_%s.txt", format(Sys.Date(), "%d_%m_%y"))),
@@ -22,11 +23,18 @@
 #'
 #'
 .callP3NreadOrg<-function(seq,size_range='151-500',Tm=c(55,57,60),GC=c(30,65),name,sequence_target=NULL,
-                          SSR_exclude_region=TRUE,report=NULL, primer3_path="primer3",primer_num=3, liberal_bases=TRUE,
-        primer3=file.path(primer3_path,"bin","primer3_core.exe"),
-        thermo.param=file.path(primer3_path, "bin", "primer3_config\\"),
-        settings=file.path(primer3_path,"primer3_v1_1_4_Ido_Bar_settings.txt")){
+        SSR_exclude_region=TRUE,report=NULL, primer_num=3, liberal_bases=TRUE,
+        primer3=file.path(path.expand("~/R/source/primer3"),"bin","primer3_core.exe"), diff_TM=2,
+        thermo.param=file.path(path.expand("~/R/source/primer3"), "bin", "primer3_config\\"),
+        settings=file.path(path.expand("~/R/source/primer3"),"primer3_v1_1_4_Ido_Bar_settings.txt")){
+  repath <- function(x, to=.Platform$OS.type) {
+    xa <- ifelse(to=="windows", gsub('/', '\\\\', x), gsub('\\\\', '/', x))
+    return(xa)
+  }
 
+  primer3=repath(primer3)
+  thermo.param=repath(thermo.param)
+  settings=repath(settings)
   sequence_exclude_region <- ifelse(SSR_exclude_region,sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target), NULL)
   #print(excluded.regions)
   # make primer 3 input file
@@ -44,7 +52,7 @@
             "PRIMER_PICK_INTERNAL_OLIGO=0\n",
             "PRIMER_PICK_RIGHT_PRIMER=1\n"  ,
             "PRIMER_EXPLAIN_FLAG=1\n"  ,
-            "PRIMER_PAIR_MAX_DIFF_TM=3\n",
+            sprintf("PRIMER_PAIR_MAX_DIFF_TM=%s\n", diff_TM),
             sprintf("PRIMER_MIN_GC=%s\n" ,GC[1]),
             sprintf("PRIMER_MAX_GC=%s\n" ,GC[2]),
             sprintf("PRIMER_MIN_TM=%s\n" ,Tm[1]),
