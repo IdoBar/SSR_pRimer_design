@@ -3,13 +3,12 @@
 #' TODO: Add support for target amplicon region (Maybe as [] in the fasta input)
 #' @param seq DNAstring object, one DNA string for the given amplicon
 #' @param sequence_target: A space separated list of target pairs: 'starting position,target length starting position2,target length2'
-#' @param SSR_exclude_region: Usually same as target, make sure the SSR is not considered as an internal oligo
 #' @param size_range product size range in the form of min-max. multiple ranges can be provided with a space between ranges, then they are prioritized from left to right. default: '151-500',
 #' @param Tm melting temprature parameters default:c(55,57,60)
 #' @param diff_TM allowed Tm difference between each fw and rv primers
 #' @param GC min and max %GC content parameters default: c(30,65)
 #' @param name name of the amplicon in chr_start_end format
-#' @param primer3 primer3 location
+#' @param primer3_dir primer3 location
 #' @param thermo.param thermodynamic parameters folder
 #' @param settings text file for parameters
 #' @author Ido Bar forked from Altuna Akalin which modified Arnaud Krebs' original function
@@ -35,7 +34,7 @@
   primer3 <- repath(file.path(primer3_dir,"bin","primer3_core"))
   if (thermo.param=="default") thermo.param <- file.path(primer3_dir,"bin","primer3_config\\")
   thermo.param <- repath(thermo.param)
-  if (settings=="default") settings <- file.path(primer3_dir,"primer3_v1_1_4_Ido_Bar_settings.txt")
+  if (settings=="default") settings <- file.path(primer3_dir,"primer3_v1_1_5_settings.txt")
   settings <- repath(settings)
   sequence_exclude_region <- NULL
   if (!is.null(sequence_target)) sequence_exclude_region <- sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target)
