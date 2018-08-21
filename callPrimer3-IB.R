@@ -23,23 +23,26 @@
 #'
 #'
 .callP3NreadOrg<-function(seq,size_range='151-500',Tm=c(55,57,60),GC=c(30,65),name,sequence_target=NULL,
-        SSR_exclude_region=TRUE,report=NULL, primer_num=3, liberal_bases=TRUE,
-        primer3=file.path(path.expand("~/R/source/primer3"),"bin","primer3_core.exe"), diff_TM=2,
-        thermo.param=file.path(path.expand("~/R/source/primer3"), "bin", "primer3_config\\"),
-        settings=file.path(path.expand("~/R/source/primer3"),"primer3_v1_1_4_Ido_Bar_settings.txt")){
+        report=NULL, primer_num=3, liberal_bases=TRUE,
+        primer3_dir=path.expand("~/R/source/primer3"), diff_TM=2,
+        thermo.param="default", settings="default"){
   repath <- function(x, to=.Platform$OS.type) {
     xa <- ifelse(to=="windows", gsub('/', '\\\\', x), gsub('\\\\', '/', x))
     return(xa)
   }
 
-  primer3=repath(primer3)
-  thermo.param=repath(thermo.param)
-  settings=repath(settings)
-  sequence_exclude_region <- ifelse(SSR_exclude_region,sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target), NULL)
+  
+  primer3 <- repath(file.path(primer3_dir,"bin","primer3_core"))
+  if (thermo.param=="default") thermo.param <- file.path(primer3_dir,"bin","primer3_config\\")
+  thermo.param <- repath(thermo.param)
+  if (settings=="default") settings <- file.path(primer3_dir,"primer3_v1_1_4_Ido_Bar_settings.txt")
+  settings <- repath(settings)
+  sequence_exclude_region <- NULL
+  if (!is.null(sequence_target)) sequence_exclude_region <- sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target)
   #print(excluded.regions)
   # make primer 3 input file
-  p3.input=tempfile()
-  p3.output=tempfile()
+  p3.input <- tempfile()
+  p3.output <- tempfile()
   write(
     paste0( sprintf("SEQUENCE_ID=%s\n",name  ),
             sprintf("SEQUENCE_TEMPLATE=%s\n",as.character(seq)),
