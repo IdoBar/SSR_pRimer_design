@@ -48,7 +48,7 @@
             sprintf("SEQUENCE_TEMPLATE=%s\n",as.character(seq)),
             sprintf("SEQUENCE_TARGET=%s\n",sequence_target),
             sprintf("SEQUENCE_OVERLAP_JUNCTION_LIST=%s\n",junction_list),
-            sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target),
+            # sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target),
             sprintf("PRIMER_LIBERAL_BASE=%d\n", as.numeric(liberal_bases)),
             sprintf("PRIMER_NUM_RETURN=%d\n", primer_num),
             "PRIMER_TASK=pick_detection_primers\n",
@@ -82,7 +82,7 @@
 
   returned.primers <- as.numeric(as.vector(out[out[,1]=='PRIMER_PAIR_NUM_RETURNED',][,2]))
   if (length(returned.primers)==0){ warning('primers not detected for ',name,call. = FALSE);return(NA)}
-  # if ((returned.primers)==0){ warning('primers not detected for ',name,call. = FALSE);return(NA)}
+  if ((returned.primers)==0){ warning('primers not detected for ',name,call. = FALSE);return(NA)}
   if (returned.primers>0){
     designed.primers=data.frame()
     for (i in 0:(returned.primers-1)){
