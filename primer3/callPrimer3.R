@@ -2,8 +2,9 @@
 #' Forked from https://gist.github.com/al2na/8540391
 #' TODO: Add support for target amplicon region (Maybe as [] in the fasta input)
 #' @param seq DNAstring object, one DNA string for the given amplicon
-#' @param sequence_target: A space separated list of target pairs: 'starting position,target length starting position2,target length2'
-#' @param size_range product size range in the form of min-max. multiple ranges can be provided with a space between ranges, then they are prioritized from left to right. default: '151-500',
+#' @param sequence_target: space separated list of target pairs: 'starting position,target length starting position2,target length2'. default: NULL
+#' @param size_range product size range in the form of min-max. multiple ranges can be provided with a space between ranges, then they are prioritized from left to right. default: '151-500'
+#' @param junction_list space separated list of integers representing exon junctions that at least one primer must overlap. default: NULL
 #' @param Tm melting temprature parameters default:c(55,57,60)
 #' @param diff_TM allowed Tm difference between each fw and rv primers
 #' @param GC min and max %GC content parameters default: c(30,65)
@@ -22,7 +23,7 @@
 #'
 #'
 .callP3NreadOrg<-function(seq,size_range='151-500',Tm=c(55,57,60),GC=c(30,65),name,sequence_target=NULL,
-        report=NULL, primer_num=3, liberal_bases=TRUE,
+        report=NULL, primer_num=15, liberal_bases=TRUE, junction_list=NULL,
         primer3_dir=path.expand("~/R/source/primer3"), diff_TM=2,
         thermo.param="default", settings="default"){
   repath <- function(x, to=.Platform$OS.type) {
@@ -37,7 +38,7 @@
   if (settings=="default") settings <- file.path(primer3_dir,"primer3_v1_1_5_settings.txt")
   settings <- repath(settings)
   sequence_exclude_region <- NULL
-  if (!is.null(sequence_target)) sequence_exclude_region <- sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target)
+  # if (!is.null(sequence_target)) sequence_exclude_region <- sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target)
   #print(excluded.regions)
   # make primer 3 input file
   p3.input <- tempfile()
@@ -46,7 +47,8 @@
     paste0( sprintf("SEQUENCE_ID=%s\n",name  ),
             sprintf("SEQUENCE_TEMPLATE=%s\n",as.character(seq)),
             sprintf("SEQUENCE_TARGET=%s\n",sequence_target),
-            sequence_exclude_region,
+            sprintf("SEQUENCE_OVERLAP_JUNCTION_LIST=%s\n",junction_list),
+            sprintf("SEQUENCE_INTERNAL_EXCLUDED_REGION=%s\n", sequence_target),
             sprintf("PRIMER_LIBERAL_BASE=%d\n", as.numeric(liberal_bases)),
             sprintf("PRIMER_NUM_RETURN=%d\n", primer_num),
             "PRIMER_TASK=pick_detection_primers\n",
@@ -75,12 +77,12 @@
 
   # sprintf("-p3_settings_file=%s", settings),
   #import and parse the output into a dataframe named designed.primers
-  out=read.delim(p3.output, sep='=', header=FALSE)
+  out <- read.delim(p3.output, sep='=', header=FALSE)
 
 
-  returned.primers=as.numeric(as.vector(out[out[,1]=='PRIMER_PAIR_NUM_RETURNED',][,2]))
+  returned.primers <- as.numeric(as.vector(out[out[,1]=='PRIMER_PAIR_NUM_RETURNED',][,2]))
   if (length(returned.primers)==0){ warning('primers not detected for ',name,call. = FALSE);return(NA)}
-  if ((returned.primers)==0){ warning('primers not detected for ',name,call. = FALSE);return(NA)}
+  # if ((returned.primers)==0){ warning('primers not detected for ',name,call. = FALSE);return(NA)}
   if (returned.primers>0){
     designed.primers=data.frame()
     for (i in 0:(returned.primers-1)){
